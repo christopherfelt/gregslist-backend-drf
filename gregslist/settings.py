@@ -14,7 +14,7 @@ SECRET_KEY = '4gu_51je(trs@r)!oq)bl8j9_^hn2*^6wx%s^a+#6up0=ues6%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'cars.apps.CarsConfig',
     'houses.apps.HousesConfig',
     'jobs.apps.JobsConfig',
+    'auth0authorization'
 
 ]
 
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -117,15 +119,38 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.RemoteUserBackend',
+]
+
 APPEND_SLASH = False
 
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
 }
+
+JWT_AUTH = {
+    'JWT_PAYLOAD_GET_USERNAME_HANDLER':
+        'auth0authorization.utils.jwt_get_username_from_payload_handler',
+    'JWT_DECODE_HANDLER':
+        'auth0authorization.utils.jwt_decode_token',
+    'JWT_ALGORITHM': 'RS256',
+    'JWT_AUDIENCE': 'YOUR_API_IDENTIFIER',
+    'JWT_ISSUER': 'https://chris-felt-auth.auth0.com/',
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+}
+
+
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
